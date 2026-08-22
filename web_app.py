@@ -73,6 +73,23 @@ st.markdown("""
         font-family: 'Inter', system-ui, -apple-system, sans-serif;
     }
 
+    /* Fix White Streamlit Top Header Bar */
+    header[data-testid="stHeader"], 
+    [data-testid="stHeader"], 
+    .stAppHeader {
+        background-color: var(--rak-bg) !important;
+        background: transparent !important;
+    }
+
+    [data-testid="stDecoration"] {
+        background: transparent !important;
+    }
+
+    header[data-testid="stHeader"] *, 
+    [data-testid="stHeader"] * {
+        color: var(--rak-text) !important;
+    }
+
     /* Sidebar Theme Synchronization */
     [data-testid="stSidebar"] {
         background-color: var(--rak-card-bg) !important;
