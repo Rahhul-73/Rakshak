@@ -1,0 +1,406 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Rakshak | AI UPI Scam Detector</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-color: #0a0e27;
+            --card-bg: #0f172a;
+            --card-border: #1e293b;
+            --text-main: #f8fafc;
+            --text-muted: #94a3b8;
+            --accent-gradient: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
+            --critical-color: #dc2626;
+            --high-color: #f97316;
+            --medium-color: #eab308;
+            --low-color: #22c55e;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            font-family: 'Inter', sans-serif;
+            line-height: 1.6;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+            display: grid;
+            grid-template-columns: 1fr 300px;
+            gap: 25px;
+        }
+
+        @media (max-width: 850px) {
+            .container {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        header {
+            margin-bottom: 25px;
+        }
+
+        .main-title {
+            font-size: 2.5rem;
+            font-weight: 800;
+            background: linear-gradient(135deg, #818cf8 0%, #c084fc 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .sub-title {
+            color: var(--text-muted);
+            font-size: 1.05rem;
+        }
+
+        .card {
+            background-color: var(--card-bg);
+            border: 1px solid var(--card-border);
+            border-radius: 14px;
+            padding: 24px;
+            margin-bottom: 20px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+        }
+
+        .quick-samples {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            margin-bottom: 15px;
+        }
+
+        .btn-sample {
+            background-color: #1e293b;
+            color: #cbd5e1;
+            border: 1px solid #334155;
+            border-radius: 8px;
+            padding: 8px 14px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .btn-sample:hover {
+            background-color: #334155;
+            color: #ffffff;
+        }
+
+        textarea {
+            width: 100%;
+            height: 140px;
+            background-color: #0f172a;
+            color: var(--text-main);
+            border: 1px solid #334155;
+            border-radius: 10px;
+            padding: 14px;
+            font-size: 1rem;
+            font-family: inherit;
+            resize: vertical;
+            margin-bottom: 15px;
+        }
+
+        textarea:focus {
+            outline: none;
+            border-color: #818cf8;
+            box-shadow: 0 0 0 3px rgba(129, 140, 248, 0.2);
+        }
+
+        .btn-analyze {
+            width: 100%;
+            background: var(--accent-gradient);
+            color: white;
+            border: none;
+            border-radius: 10px;
+            padding: 14px;
+            font-size: 1.1rem;
+            font-weight: 700;
+            cursor: pointer;
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+        }
+
+        .btn-analyze:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(99, 102, 241, 0.4);
+        }
+
+        /* Results Display */
+        #result-area {
+            display: none;
+        }
+
+        .risk-card {
+            border-left: 6px solid var(--medium-color);
+            transition: all 0.3s ease;
+        }
+
+        .risk-card.risk-critical { border-left-color: var(--critical-color); background: linear-gradient(135deg, rgba(220, 38, 38, 0.1) 0%, #0f172a 100%); }
+        .risk-card.risk-high { border-left-color: var(--high-color); background: linear-gradient(135deg, rgba(249, 115, 22, 0.1) 0%, #0f172a 100%); }
+        .risk-card.risk-medium { border-left-color: var(--medium-color); background: linear-gradient(135deg, rgba(234, 179, 8, 0.1) 0%, #0f172a 100%); }
+        .risk-card.risk-low { border-left-color: var(--low-color); background: linear-gradient(135deg, rgba(34, 197, 94, 0.1) 0%, #0f172a 100%); }
+
+        .badge {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            margin-right: 8px;
+        }
+
+        .badge-critical { background-color: var(--critical-color); color: white; }
+        .badge-high { background-color: var(--high-color); color: white; }
+        .badge-medium { background-color: var(--medium-color); color: black; }
+        .badge-low { background-color: var(--low-color); color: white; }
+
+        .action-box {
+            background-color: #1e1b4b;
+            border-left: 4px solid #6366f1;
+            padding: 12px 16px;
+            border-radius: 8px;
+            margin-top: 15px;
+        }
+
+        .hindi-box {
+            background-color: #1e1b4b;
+            border: 1px solid #4338ca;
+            border-radius: 10px;
+            padding: 14px;
+            margin-top: 15px;
+        }
+
+        /* Sidebar Styling */
+        .sidebar-card {
+            background-color: var(--card-bg);
+            border: 1px solid var(--card-border);
+            border-radius: 14px;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+
+        .helpline-box {
+            background: linear-gradient(135deg, #7f1d1d 0%, #991b1b 100%);
+            color: white;
+            padding: 16px;
+            border-radius: 10px;
+            text-align: center;
+            margin-top: 15px;
+        }
+
+        .spinner {
+            display: none;
+            text-align: center;
+            padding: 20px;
+            font-weight: 600;
+            color: #818cf8;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Main Content Area -->
+        <main>
+            <header>
+                <div class="main-title">🛡️ Rakshak (रक्षक)</div>
+                <div class="sub-title">AI-Powered UPI Scam Detector for Indian Citizens</div>
+            </header>
+
+            <div class="card">
+                <div style="font-size: 0.9rem; font-weight: 600; color: var(--text-muted); margin-bottom: 10px;">
+                    🧪 Quick Test Examples (Click to Auto-fill):
+                </div>
+                <div class="quick-samples">
+                    <button class="btn-sample" onclick="fillSample('KYC')">📱 KYC Scam</button>
+                    <button class="btn-sample" onclick="fillSample('LOTTERY')">🎁 Lottery Scam</button>
+                    <button class="btn-sample" onclick="fillSample('WRONG')">💸 Wrong Transfer</button>
+                    <button class="btn-sample" onclick="fillSample('SAFE')">✅ Safe Message</button>
+                </div>
+
+                <textarea id="messageInput" placeholder="Paste or type suspicious SMS, WhatsApp message, or payment request here..."></textarea>
+                <button class="btn-analyze" onclick="analyzeMessage()">🔍 Analyze Message with AI</button>
+            </div>
+
+            <div id="spinner" class="spinner">
+                🤖 Analyzing message with Google Gemini AI...
+            </div>
+
+            <!-- Analysis Output Card -->
+            <div id="result-area">
+                <div id="riskCard" class="card risk-card">
+                    <h2 id="scamHeader" style="margin-bottom: 10px;"></h2>
+                    <div style="margin-bottom: 15px;">
+                        <span id="riskBadge" class="badge"></span>
+                        <span id="typeBadge" class="badge" style="background-color: #334155; color: white;"></span>
+                    </div>
+
+                    <h4 style="color: #cbd5e1; margin-bottom: 5px;">📖 Explanation</h4>
+                    <p id="explanationText" style="color: #f8fafc; margin-bottom: 15px;"></p>
+
+                    <div id="redFlagsContainer" style="display: none; margin-bottom: 15px;">
+                        <h4 style="color: #f87171; margin-bottom: 5px;">⚠️ Red Flags Found:</h4>
+                        <ul id="redFlagsList" style="padding-left: 20px; color: #fca5a5;"></ul>
+                    </div>
+
+                    <div class="action-box">
+                        <h4 style="color: #a5b4fc; margin-bottom: 5px;">✅ What to do:</h4>
+                        <p id="actionText" style="color: #e0e7ff;"></p>
+                    </div>
+
+                    <div id="hindiBox" class="hindi-box" style="display: none;">
+                        <h4 style="color: #a5b4fc; margin-bottom: 4px;">🔊 Hindi Warning (हिंदी चेतावनी):</h4>
+                        <p id="hindiWarningText" style="font-size: 1.05rem; font-style: italic; color: #fef08a;"></p>
+                    </div>
+                </div>
+            </div>
+        </main>
+
+        <!-- Sidebar Area -->
+        <aside>
+            <div class="sidebar-card">
+                <h3>📊 Analytics</h3>
+                <div style="display: flex; justify-content: space-between; margin-top: 15px;">
+                    <div>
+                        <div style="font-size: 0.8rem; color: var(--text-muted);">Total Scans</div>
+                        <div id="scanCount" style="font-size: 1.8rem; font-weight: 800;">0</div>
+                    </div>
+                    <div>
+                        <div style="font-size: 0.8rem; color: var(--text-muted);">Scams Detected</div>
+                        <div id="scamCount" style="font-size: 1.8rem; font-weight: 800; color: #f87171;">0</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="sidebar-card">
+                <h3>🚨 Cybercrime Help</h3>
+                <div class="helpline-box">
+                    <h2 style="font-size: 1.8rem; margin-bottom: 5px;">📞 Call 1930</h2>
+                    <p style="font-size: 0.85rem; margin-bottom: 10px;">National Cybercrime Toll-Free Helpline (24x7)</p>
+                    <a href="https://cybercrime.gov.in" target="_blank" style="color: #fef08a; font-weight: 700; text-decoration: underline;">cybercrime.gov.in</a>
+                </div>
+            </div>
+
+            <div class="sidebar-card">
+                <h3>🔒 UPI Golden Rule</h3>
+                <p style="font-size: 0.9rem; color: #cbd5e1; margin-top: 10px;">
+                    <strong>UPI PIN is ONLY required to SEND money.</strong> You NEVER enter your PIN to RECEIVE money!
+                </p>
+            </div>
+        </aside>
+    </div>
+
+    <script>
+        let totalScans = 0;
+        let scamsFound = 0;
+
+        function fillSample(type) {
+            const input = document.getElementById('messageInput');
+            if (type === 'KYC') input.value = "Your Paytm KYC is pending. Update now: bit.ly/kyc";
+            else if (type === 'LOTTERY') input.value = "Congratulations! You won ₹10 Lakh in KBC. Send ₹5000 processing fee.";
+            else if (type === 'WRONG') input.value = "Hi, I sent ₹50,000 to you by mistake. Please return to 9876543210@upi";
+            else if (type === 'SAFE') input.value = "Hello, how are you? Are we meeting today at 5 PM?";
+        }
+
+        async function analyzeMessage() {
+            const message = document.getElementById('messageInput').value.trim();
+            if (!message) {
+                alert("Please enter a message to analyze!");
+                return;
+            }
+
+            document.getElementById('spinner').style.display = 'block';
+            document.getElementById('result-area').style.display = 'none';
+
+            try {
+                const response = await fetch('/api/analyze', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ message: message })
+                });
+
+                const data = await response.json();
+                document.getElementById('spinner').style.display = 'none';
+                displayResults(data);
+
+                // Update analytics counters
+                totalScans++;
+                document.getElementById('scanCount').innerText = totalScans;
+                if (data.is_scam) {
+                    scamsFound++;
+                    document.getElementById('scamCount').innerText = scamsFound;
+                }
+
+            } catch (err) {
+                document.getElementById('spinner').style.display = 'none';
+                alert("Error connecting to server. Please try again.");
+            }
+        }
+
+        function displayResults(data) {
+            const resultArea = document.getElementById('result-area');
+            const riskCard = document.getElementById('riskCard');
+            const scamHeader = document.getElementById('scamHeader');
+            const riskBadge = document.getElementById('riskBadge');
+            const typeBadge = document.getElementById('typeBadge');
+
+            riskCard.className = 'card risk-card';
+            const riskClass = 'risk-' + (data.risk_score || 'medium').toLowerCase();
+            riskCard.classList.add(riskClass);
+
+            if (data.is_scam) {
+                scamHeader.innerText = "🚨 SCAM DETECTED!";
+                scamHeader.style.color = "#ef4444";
+            } else {
+                scamHeader.innerText = "✅ Message Appears SAFE";
+                scamHeader.style.color = "#22c55e";
+            }
+
+            riskBadge.innerText = "RISK: " + (data.risk_score || "LOW").toUpperCase();
+            riskBadge.className = 'badge badge-' + (data.risk_score || 'low').toLowerCase();
+
+            typeBadge.innerText = "TYPE: " + (data.scam_type || "None");
+
+            document.getElementById('explanationText').innerText = data.explanation || "";
+            document.getElementById('actionText').innerText = data.action || "";
+
+            // Red Flags
+            const redFlagsContainer = document.getElementById('redFlagsContainer');
+            const redFlagsList = document.getElementById('redFlagsList');
+            redFlagsList.innerHTML = '';
+
+            if (data.red_flags && data.red_flags.length > 0) {
+                redFlagsContainer.style.display = 'block';
+                data.red_flags.forEach(flag => {
+                    const li = document.createElement('li');
+                    li.innerText = flag;
+                    redFlagsList.appendChild(li);
+                });
+            } else {
+                redFlagsContainer.style.display = 'none';
+            }
+
+            // Hindi Warning
+            const hindiBox = document.getElementById('hindiBox');
+            if (data.hindi_warning) {
+                hindiBox.style.display = 'block';
+                document.getElementById('hindiWarningText').innerText = '"' + data.hindi_warning + '"';
+            } else {
+                hindiBox.style.display = 'none';
+            }
+
+            resultArea.style.display = 'block';
+        }
+    </script>
+</body>
+</html>
