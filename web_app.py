@@ -1,6 +1,7 @@
 """
 Rakshak (रक्षक) - AI UPI Scam Detector Web Application
 Powered by Streamlit, Google Gemini AI, and gTTS
+Supports Seamless Light Mode & Dark Mode Themes
 """
 
 import io
@@ -17,64 +18,124 @@ st.set_page_config(
     initial_sidebar_state="expanded"
 )
 
-# 2. Custom CSS for Fintech Dark Theme Aesthetics
+# 2. Custom Adaptive CSS for Light & Dark Theme Compatibility
 st.markdown("""
     <style>
-    /* Dark Theme Backgrounds */
+    /* Base Font & Theme CSS Variables */
+    :root {
+        --rak-bg: #0a0e27;
+        --rak-card-bg: #0f172a;
+        --rak-card-border: #1e293b;
+        --rak-text: #f8fafc;
+        --rak-text-muted: #94a3b8;
+        --rak-input-bg: #0f172a;
+        --rak-input-border: #334155;
+    }
+
+    /* Light Theme System Preference */
+    @media (prefers-color-scheme: light) {
+        :root {
+            --rak-bg: #f8fafc;
+            --rak-card-bg: #ffffff;
+            --rak-card-border: #e2e8f0;
+            --rak-text: #0f172a;
+            --rak-text-muted: #475569;
+            --rak-input-bg: #ffffff;
+            --rak-input-border: #cbd5e1;
+        }
+    }
+
+    /* Streamlit User Light Mode Override */
+    [data-theme="light"], .stApp[data-theme="light"] {
+        --rak-bg: #f8fafc;
+        --rak-card-bg: #ffffff;
+        --rak-card-border: #e2e8f0;
+        --rak-text: #0f172a;
+        --rak-text-muted: #475569;
+        --rak-input-bg: #ffffff;
+        --rak-input-border: #cbd5e1;
+    }
+
+    /* Streamlit User Dark Mode Override */
+    [data-theme="dark"], .stApp[data-theme="dark"] {
+        --rak-bg: #0a0e27;
+        --rak-card-bg: #0f172a;
+        --rak-card-border: #1e293b;
+        --rak-text: #f8fafc;
+        --rak-text-muted: #94a3b8;
+        --rak-input-bg: #0f172a;
+        --rak-input-border: #334155;
+    }
+
     .stApp {
-        background-color: #0a0e27;
-        color: #f8fafc;
+        background-color: var(--rak-bg) !important;
+        color: var(--rak-text) !important;
         font-family: 'Inter', system-ui, -apple-system, sans-serif;
+    }
+
+    /* Sidebar Theme Synchronization */
+    [data-testid="stSidebar"] {
+        background-color: var(--rak-card-bg) !important;
+        border-right: 1px solid var(--rak-card-border) !important;
+    }
+    [data-testid="stSidebar"] h1, 
+    [data-testid="stSidebar"] h2, 
+    [data-testid="stSidebar"] h3, 
+    [data-testid="stSidebar"] p, 
+    [data-testid="stSidebar"] span, 
+    [data-testid="stSidebar"] label {
+        color: var(--rak-text) !important;
     }
 
     /* Main Container Padding */
     .block-container {
-        padding-top: 2rem;
+        padding-top: 1.8rem;
         padding-bottom: 3rem;
         max-width: 1100px;
     }
 
-    /* Custom Header Styling */
+    /* Header Styling */
     .main-title {
         font-size: 2.8rem;
         font-weight: 800;
-        background: linear-gradient(135deg, #818cf8 0%, #c084fc 100%);
+        background: linear-gradient(135deg, #6366f1 0%, #a855f7 100%);
         -webkit-background-clip: text;
         -webkit-text-fill-color: transparent;
         margin-bottom: 0.2rem;
     }
     .sub-title {
         font-size: 1.15rem;
-        color: #94a3b8;
+        color: var(--rak-text-muted);
         margin-bottom: 2rem;
     }
 
-    /* Card Containers */
+    /* Custom Cards */
     .custom-card {
-        background-color: #0f172a;
-        border: 1px solid #1e293b;
-        border-radius: 12px;
+        background-color: var(--rak-card-bg);
+        border: 1px solid var(--rak-card-border);
+        border-radius: 14px;
         padding: 1.5rem;
         margin-bottom: 1.5rem;
-        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+        color: var(--rak-text);
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
     }
 
-    /* Risk Cards */
+    /* Risk Card Colors */
     .risk-critical {
         border-left: 6px solid #dc2626 !important;
-        background: linear-gradient(135deg, rgba(220, 38, 38, 0.1) 0%, #0f172a 100%);
+        background: linear-gradient(135deg, rgba(220, 38, 38, 0.08) 0%, var(--rak-card-bg) 100%);
     }
     .risk-high {
         border-left: 6px solid #f97316 !important;
-        background: linear-gradient(135deg, rgba(249, 115, 22, 0.1) 0%, #0f172a 100%);
+        background: linear-gradient(135deg, rgba(249, 115, 22, 0.08) 0%, var(--rak-card-bg) 100%);
     }
     .risk-medium {
         border-left: 6px solid #eab308 !important;
-        background: linear-gradient(135deg, rgba(234, 179, 8, 0.1) 0%, #0f172a 100%);
+        background: linear-gradient(135deg, rgba(234, 179, 8, 0.08) 0%, var(--rak-card-bg) 100%);
     }
     .risk-low {
         border-left: 6px solid #22c55e !important;
-        background: linear-gradient(135deg, rgba(34, 197, 94, 0.1) 0%, #0f172a 100%);
+        background: linear-gradient(135deg, rgba(34, 197, 94, 0.08) 0%, var(--rak-card-bg) 100%);
     }
 
     /* Badges */
@@ -94,27 +155,27 @@ st.markdown("""
 
     /* Hindi Warning Box */
     .hindi-box {
-        background-color: #1e1b4b;
-        border: 1px solid #4338ca;
+        background-color: rgba(99, 102, 241, 0.12);
+        border: 1px solid #6366f1;
         border-radius: 10px;
         padding: 1rem;
         margin-top: 1rem;
     }
 
-    /* Streamlit Text Area Customization */
+    /* Text Area Style */
     .stTextArea textarea {
-        background-color: #0f172a !important;
-        color: #f8fafc !important;
-        border: 1px solid #334155 !important;
+        background-color: var(--rak-input-bg) !important;
+        color: var(--rak-text) !important;
+        border: 1px solid var(--rak-input-border) !important;
         border-radius: 10px !important;
         font-size: 1.05rem !important;
     }
     .stTextArea textarea:focus {
-        border-color: #818cf8 !important;
-        box-shadow: 0 0 0 2px rgba(129, 140, 248, 0.2) !important;
+        border-color: #6366f1 !important;
+        box-shadow: 0 0 0 2px rgba(99, 102, 241, 0.2) !important;
     }
 
-    /* Primary Button Gradient */
+    /* Primary Button */
     .stButton > button {
         background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%) !important;
         color: white !important;
@@ -133,12 +194,15 @@ st.markdown("""
 
     /* Helpline Banner */
     .helpline-card {
-        background: linear-gradient(135deg, #7f1d1d 0%, #991b1b 100%);
+        background: linear-gradient(135deg, #b91c1c 0%, #dc2626 100%);
         border-radius: 10px;
         padding: 1rem;
-        color: white;
+        color: white !important;
         text-align: center;
         margin-top: 1rem;
+    }
+    .helpline-card * {
+        color: white !important;
     }
     </style>
 """, unsafe_allow_html=True)
@@ -157,9 +221,8 @@ def set_sample_message(text: str):
 
 # 4. Sidebar Content
 with st.sidebar:
-    st.image("https://img.icons8.com/isometric-folders/100/shield.png", width=70)
     st.markdown("## 🛡️ Rakshak (रक्षक)")
-    st.markdown("AI Security Shield for Indian UPI Users")
+    st.markdown("*AI Security Shield for Indian UPI Users*")
     st.divider()
 
     # Session Stats
@@ -301,7 +364,7 @@ if analyze_clicked:
         if hindi_warning:
             st.markdown(f"""
                 <div class="hindi-box">
-                    <h4 style="margin:0 0 0.4rem 0; color: #a5b4fc;">🔊 Hindi Voice Warning (हिंदी चेतावनी)</h4>
+                    <h4 style="margin:0 0 0.4rem 0;">🔊 Hindi Voice Warning (हिंदी चेतावनी)</h4>
                     <p style="font-size: 1.1rem; margin:0;"><em>"{hindi_warning}"</em></p>
                 </div>
             """, unsafe_allow_html=True)
@@ -337,7 +400,7 @@ if analyze_clicked:
 st.markdown("---")
 st.markdown(
     """
-    <div style="text-align: center; color: #64748b; font-size: 0.9rem;">
+    <div style="text-align: center; color: var(--rak-text-muted); font-size: 0.9rem;">
         🛡️ <strong>Rakshak</strong> — Protecting Indian Citizens from Financial Fraud | Lost money? Call <strong>1930</strong> immediately.
     </div>
     """,
